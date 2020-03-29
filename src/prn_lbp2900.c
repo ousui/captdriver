@@ -158,7 +158,7 @@ static bool lbp2900_page_prologue(struct printer_state_s *state, const struct pa
 	uint8_t buf[16];
 
 	uint8_t pt1 = 0x01;
-	uint8_t save = 0x00;
+	uint8_t save = dims->toner_save;
 	uint8_t pt2 = 0x01;
 
 	uint8_t pageparms[] = {

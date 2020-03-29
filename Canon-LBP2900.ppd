@@ -293,6 +293,12 @@
 *DefaultColorModel: Gray
 *ColorModel Gray/Grayscale: "<</cupsColorSpace 3/cupsColorOrder 0/cupsCompression 2>>setpagedevice"
 *CloseUI: *ColorModel
+*OpenUI *captTonerSave/Toner Save: Boolean
+*OrderDependency: 10 AnySetup *captTonerSave
+*DefaultcaptTonerSave: False
+*captTonerSave False/Disabled: "<</cupsCompression 0>>setpagedevice"
+*captTonerSave True/Enabled: "<</cupsCompression 1>>setpagedevice"
+*CloseUI: *captTonerSave
 *OpenUI *Resolution/Resolution: PickOne
 *OrderDependency: 10 AnySetup *Resolution
 *DefaultResolution: 600dpi
@@ -334,4 +340,4 @@
 *Font Times-Roman: Standard "(1.05)" Standard ROM
 *Font ZapfChancery-MediumItalic: Standard "(1.05)" Standard ROM
 *Font ZapfDingbats: Special "(001.005)" Special ROM
-*% End of CNLB2K9.ppd, 20521 bytes.
+*% End of CNLB2K9.ppd, 20799 bytes.

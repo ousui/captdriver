@@ -27,6 +27,7 @@ struct page_dims_s {
 	/* set by CUPS */
 	unsigned paper_width;
 	unsigned paper_height;
+	unsigned toner_save;
 	unsigned margin_height;
 	unsigned margin_width;
 	/* set by printer ops */

@@ -18,13 +18,13 @@
  */
 
 #include "paper.h"
-
 #include <cups/raster.h>
 
 void page_set_dims(struct page_dims_s *dims, const struct cups_page_header2_s *header)
 {
 	dims->paper_width  = header->PageSize[0] * header->HWResolution[0] / 72;
 	dims->paper_height = header->PageSize[1] * header->HWResolution[1] / 72;
+	dims->toner_save = header->cupsCompression;
 	dims->margin_height = header->Margins[0];
 	dims->margin_width = header->Margins[1];
 }

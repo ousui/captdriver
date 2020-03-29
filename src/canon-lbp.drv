@@ -102,6 +102,11 @@ Version 0.1.2
 	MediaSize Statement
 	// End Less Common Sizes
 
+
+	Option "captTonerSave/Toner Save" Boolean AnySetup 10 
+		*Choice False/Disabled "<</cupsCompression 0>>setpagedevice"
+		Choice True/Enabled "<</cupsCompression 1>>setpagedevice"
+
 	*Resolution k 1 70 592 0 "600dpi/600 DPI"
 	MaxSize 215.9mm 355.6mm		// US Legal
 	VariablePaperSize yes
