@@ -59,12 +59,12 @@ static void send_job_start(uint8_t fg, uint16_t page)
 {
 	/* FIXME: this function could use a better name */
 
-	uint8_t ml = 0x00; /* host name lenght */
-	uint8_t ul = 0x00; /* user name lenght */
-	uint8_t nl = 0x00; /* document name lenght */
+	uint8_t ml = 16; /* host name length */
+	uint8_t ul = 8; /* user name length */
+	uint8_t nl = 16; /* document name length */
 	time_t rawtime = time(NULL);
 	const struct tm *tm = localtime(&rawtime);
-	uint8_t buf[32 + 40 + ml + ul + nl];
+	uint8_t padsize = 40;
 	uint8_t head[32] = {
 		0x00, 0x00, 0x00, 0x00, LO(page), HI(page), 0x00, 0x00,
 		ml, 0x00, ul, 0x00, nl, 0x00, 0x00, 0x00,
@@ -75,8 +75,9 @@ static void send_job_start(uint8_t fg, uint16_t page)
 		(uint8_t) tm->tm_hour, (uint8_t) tm->tm_min, (uint8_t) tm->tm_sec,
 		0x01,
 	};
+	uint8_t buf[sizeof(head) + padsize + ml + ul + nl];
 	memcpy(buf, head, sizeof(head));
-	memset(buf + 32, 0, 40 + ml + ul + nl);
+	memset(buf + sizeof(head), 0, padsize + ml + ul + nl);
 	capt_sendrecv(CAPT_JOB_SETUP, buf, sizeof(buf), NULL, 0);
 }
 
