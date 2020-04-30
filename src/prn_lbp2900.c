@@ -129,7 +129,12 @@ static void lbp2900_job_prologue(struct printer_state_s *state)
 	job=WORD(buf[2], buf[3]);
 	lbp2900_wait_ready(state->ops);
 	send_job_start(1, 0);
-	lbp2900_wait_ready(state->ops);
+	// lbp2900_wait_ready(state->ops);
+	while (1) {
+		if (! FLAG(lbp2900_get_status(state->ops), CAPT_FL_PROCESSING))
+			break;
+		sleep(1);
+	}
 }
 
 static void lbp3000_job_prologue(struct printer_state_s *state)
@@ -159,7 +164,11 @@ static void lbp3000_job_prologue(struct printer_state_s *state)
 	uint8_t dummy[2] = {0, 0};
 	capt_sendrecv(0xE0A6, dummy, sizeof(dummy), NULL, 0);
 
-	lbp2900_wait_ready(state->ops);
+	while (1) {
+		if (! FLAG(lbp2900_get_status(state->ops), CAPT_FL_PROCESSING))
+			break;
+		sleep(1);
+	}
 }
 
 static void lbp3010_job_prologue(struct printer_state_s *state)
