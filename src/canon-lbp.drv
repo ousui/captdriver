@@ -49,6 +49,7 @@ Version 0.1.4
 
 		MinSize 76.2mm 127.0mm
 		MaxSize 215.9mm 355.6mm		// US Legal
+		HWmargins 5mm 5mm 5mm 5mm
 
 		/*
 		 * NOTE: Some of the sizes appear to be identical to
@@ -59,7 +60,6 @@ Version 0.1.4
 		 */
 
 		/* Common Document Sizes */
-		HWmargins 5mm 5mm 5mm 5mm
 		VariablePaperSize yes
 		*MediaSize A4
 		MediaSize A5

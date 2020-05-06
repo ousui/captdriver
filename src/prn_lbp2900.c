@@ -228,8 +228,8 @@ static bool lbp2900_page_prologue(struct printer_state_s *state, const struct pa
 		0x1F, 0x1F, 0x1F, 0x1F, dims->media_type, /* adapt */ 0x11, 0x04, 0x00,
 		0x01, 0x01, air, save, 0x00, 0x00,
 		/* Bytes 22-33 (0x16 to 0x21) */
-		LO(dims->margin_height), HI(dims->margin_height),/* set print area */
-		LO(dims->margin_width), HI(dims->margin_width),
+		LO(dims->bound_a), HI(dims->bound_a),/* set print area */
+		LO(dims->bound_b), HI(dims->bound_b),
 		LO(dims->line_size), HI(dims->line_size),
 		LO(dims->num_lines), HI(dims->num_lines),
 		LO(dims->paper_width), HI(dims->paper_width),
@@ -392,8 +392,49 @@ static void lbp2900_page_setup(struct printer_state_s *state,
 	(void) state;
 	(void) width;
 	(void) height;
-	dims->auto_set = true; 
-	dims->band_size = 70;
+
+	/* Override dims for standard sizes to maintain consistency
+       with the original drivers
+    */
+	if ((dims->paper_width_pts == 595) && (dims->paper_height_pts == 842)) {
+		/* A4 */
+		dims->capt_size_id = 0x02; 
+		dims->paper_width = 4960;
+		dims->paper_height = 7014;
+	}
+	else if ((dims->paper_width_pts == 420) && (dims->paper_height_pts == 595)) {
+		/* A5 */
+		dims->capt_size_id = 0x03; 
+		dims->paper_width = 3496;
+		dims->paper_height = 4960;
+	}
+	else {
+		/* custom sizes */
+		dims->capt_size_id = 0x13;
+		dims->paper_height = dims->paper_height_pts * dims->h_dpi / 72;
+		dims->paper_width = dims->paper_width_pts * dims->w_dpi / 72;
+	}
+
+	switch(dims->capt_size_id) {
+		case 0x02:
+		case 0x03:
+			dims->bound_a = 0x0078;
+			dims->bound_b = 0x0060;
+			dims->num_lines = dims->paper_height - (dims->bound_a*2) + 2;
+			break;
+		default:
+			dims->bound_a = 0x0076;
+			dims->bound_b = 0x005E;
+			dims->num_lines = dims->paper_height - (dims->bound_a*2);
+			break;
+	}
+
+	dims->line_size = (dims->paper_width - (dims->bound_a*2) ) / 8;
+	while(dims->line_size & 0x02)
+		dims->line_size += 1;
+
+	dims->band_size = dims->num_lines/8;
+	fprintf(stderr, "DEBUG: CAPT: b_a=%u, b_b=%u\n",dims->bound_a,dims->bound_b);
 }
 
 static void lbp2900_cancel_cleanup(struct printer_state_s *state)
