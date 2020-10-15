@@ -31,6 +31,8 @@ enum printer_support {
 
 static bool job_cancel;
 
+static int job_cups;
+
 struct page_dims_s;
 
 struct printer_state_s {

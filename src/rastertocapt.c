@@ -25,6 +25,7 @@
 #include <fcntl.h>
 #include <signal.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include <cups/raster.h>
@@ -372,6 +373,7 @@ int main(int argc, char *argv[])
 	}
 
 	fprintf(stderr, "DEBUG: CAPT: rastertocapt started\n");
+	job_cups = atoi(argv[1]);
 	do_print(fd);
 	fprintf(stderr, "DEBUG: CAPT: rastertocapt finished\n");
 

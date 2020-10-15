@@ -126,7 +126,7 @@ static void lbp2900_job_prologue(struct printer_state_s *state)
 	capt_sendrecv(CAPT_START_0, NULL, 0, NULL, 0);
 	capt_sendrecv(CAPT_GPIO, lbp2900_gpio_init, ARRAY_SIZE(lbp2900_gpio_init), NULL, 0);
 	capt_sendrecv(CAPT_JOB_BEGIN, magicbuf_0, ARRAY_SIZE(magicbuf_0), buf, &size);
-	job=WORD(buf[2], buf[3]);
+	job = (uint16_t)job_cups;
 	lbp2900_wait_ready(state->ops);
 	send_job_start(1, 0);
 	lbp2900_wait_ready(state->ops);
@@ -146,7 +146,7 @@ static void lbp3000_job_prologue(struct printer_state_s *state)
 	capt_sendrecv(CAPT_START_0, NULL, 0, NULL, 0);
 	capt_sendrecv(CAPT_GPIO, lbp2900_gpio_init, ARRAY_SIZE(lbp2900_gpio_init), NULL, 0);
 	capt_sendrecv(CAPT_JOB_BEGIN, magicbuf_0, ARRAY_SIZE(magicbuf_0), buf, &size); 
-	job=WORD(buf[2], buf[3]); 
+	job = (uint16_t)job_cups;
 
 	/* LBP-3000 prints the very first printjob perfectly
 	 * and then proceeds to hang at this (commented out)
