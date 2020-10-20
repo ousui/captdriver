@@ -1,15 +1,31 @@
-This is a driver for Canon CAPT-based printers (LBP-***)
-based on several reverse engineering attempts. This is
-currently in an early alpha stage. Use at your own risk.
+This is a dead branch of Captdriver, a libre printer driver
+to allow printing from the Common Unix Printing System (CUPS)
+to certain Canon printers that only support the Canon Advanced
+Printing Technology (CAPT) control protocol and associated data
+formats.
 
-Please take a look at INSTALL.git and INSTALL files for
-installation instructions.
+This branch will not be updated. However, it has been retained
+in the source tree to serve as a historical reference, just in
+case it might be useful for troubleshooting regressions.
 
-The printer protocol documentation based on reverse engineering
-is in the SPECS file. This is incomplete and probbaly has many
-errors. Please help expanding it.
+To get the latest release, return to the master branch.
+Alternatively, check the releases or the issues section.
 
-The file "rastertocapt" has to be installed into CUPS manually.
-If you don't know how to do that, this driver is not for you. :)
-Automatic installation will not be done until the driver reaches
-beta stage to avoid misuse.
+This branch contains a hack that was intended to allow the
+LBP2900 to print after the first print job on Raspberry Pi
+computers running Raspbian or Raspberry Pi OS without power
+cycling the printer.
+
+It was discovered that on Raspbian/Raspberry Pi OS and several
+other operating systems, the LBP2900 was unable to initiate a
+print job after changes introduced in commit 75f78a8. This
+has been discussed in the following Issues:
+
+agalakhov/#7 https://github.com/agalakhov/captdriver/issues/7
+mounaiban/#3 https://github.com/mounaiban/captdriver/issues/3
+
+In this branch, the lower 16 bits of the CUPS job ID was used
+as the CAPT job number in prn_lbp2900.c, in an attempt to mimic
+the way jobs were dispatched in 216fddb and earlier, yet with 
+a greater degree of flexibility. However, the changes failed to
+resolve the issue at large.
