@@ -7,11 +7,12 @@ rastertocapt_SOURCES = rastertocapt.c \
     capt-status.h capt-status.c \
     generic-ops.h generic-ops.c \
     printer.h printer.c \
+    printer-usb.h printer-usb.c \
     paper.h paper.c \
     hiscoa-common.h hiscoa-common.c \
     hiscoa-compress.h hiscoa-compress.c
 
 rastertocapt_SOURCES += prn_lbp2900.c
 
-AM_CFLAGS = -std=c99 -Wall -Wextra -pedantic $(CUPS_CFLAGS)
-rastertocapt_LDADD = $(CUPS_LIBS)
+AM_CFLAGS = -std=c99 -Wall -Wextra -pedantic $(CUPS_CFLAGS) $(LIBUSB_1_0_CFLAGS)
+rastertocapt_LDADD = $(CUPS_LIBS) $(LIBUSB_1_0_LIBS)

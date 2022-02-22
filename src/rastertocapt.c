@@ -19,6 +19,7 @@
 
 #include "std.h"
 #include "printer.h"
+#include "printer-usb.h"
 #include "paper.h"
 
 #include <errno.h>
@@ -28,7 +29,7 @@
 #include <string.h>
 
 #include <cups/raster.h>
-
+#include <cups/backend.h>
 
 struct cached_page_s {
 	struct page_dims_s dims;
@@ -231,6 +232,7 @@ static void do_cancel(int s)
 		free_state();
 
 	fprintf(stderr, "DEBUG: CAPT: job cancellation cleanup complete\n");
+	usb_cleanup();
 	exit(1);
 }
 
@@ -336,9 +338,54 @@ static void do_print(int fd)
 	free_state();
 }
 
+int serial_number_from_uri(const char* uri, char sn_out[12])
+{
+	char* refstr = "usb://Canon/";
+	size_t i_start = strlen(refstr);
+	const char* sub = uri + i_start; //substring after first part of URI
+
+	size_t sn_len = 12;
+	size_t i;
+	size_t i_end;
+
+	if(strncmp(uri, refstr, strlen(refstr)))
+	{
+		fprintf(stderr, "ERROR: only Canon USB printers are supported\n");
+		return -1;
+	}
+
+	i_end = strlen(sub);
+	for(i = 0; i < i_end; i++)
+	{
+		if(*sub == '?')
+		{
+			if(strlen(sub) > 8)
+			{
+				if(!strncmp(sub, "?serial=", 8))
+				{
+					sub += 8;
+					break;
+				}
+			}
+		}
+		sub++;
+	}
+
+	if(strlen(sub) < sn_len)
+	{
+		// string after "?serial=" is too short
+		fprintf(stderr, "ERROR: serial number not found\n");
+		return -2;
+	}
+
+	strncpy(sn_out, sub, sn_len);
+	return 0;
+}
 
 int main(int argc, char *argv[])
 {
+
+	const char* device_uri;
 
 	#if POSIX_C_SOURCE >= 199309L
 		struct sigaction act_ign;
@@ -359,6 +406,17 @@ int main(int argc, char *argv[])
 	#endif
 
 	int fd = 0;
+	char sn[12];
+
+	// TODO: clean this up once done
+	device_uri = cupsBackendDeviceURI(argv);
+	if(serial_number_from_uri(device_uri, sn)) return 1;
+	fprintf(stderr, "DEBUG: CAPT: Device URI: %s\n", device_uri);
+	fprintf(stderr, "DEBUG: CAPT: Device SN: %s\n", sn);
+	if(set_device_handle(sn)){
+		fprintf(stderr, "DEBUG: CAPT: libusb device handle setup failed\n");
+	}
+	if(device_handle == NULL) fprintf(stderr, "DEBUG: CAPT: libusb device handle is null (main)\n");
 
 	if (argc < 6 || argc > 7) {
 		fprintf(stderr, "Usage: %s job-id user title copies options [file]\n", argv[0]);
@@ -380,5 +438,6 @@ int main(int argc, char *argv[])
 	if (argc == 7)
 		close(fd);
 
+	usb_cleanup();
 	return 0;
 }

@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2013 Alexey Galakhov <agalakhov@gmail.com>
+ * Copyright (C) 2020, 2022 Moses Chong
  *
  * Licensed under the GNU General Public License Version 3
  *
@@ -18,6 +19,7 @@
  */
 
 #include "capt-command.h"
+#include "printer-usb.h"
 
 #include "std.h"
 #include "word.h"
@@ -29,6 +31,7 @@
 #include <cups/sidechannel.h>
 
 static uint8_t capt_iobuf[0x10000];
+static unsigned char lusb_iobuf[0x10240];
 static size_t  capt_iosize;
 static cups_sc_status_t last_send_status = CUPS_SC_STATUS_NONE;
 static bool sendrecv_started = false;
@@ -52,6 +55,8 @@ static void capt_send_buf(void)
 {
 	const uint8_t *iopos = capt_iobuf;
 	size_t iosize = capt_iosize;
+	int n_sent;
+	int code_r;
 
 	if (debug) {
 		fprintf(stderr, "DEBUG: CAPT: send ");
@@ -59,66 +64,68 @@ static void capt_send_buf(void)
 	}
 
 	while (iosize) {
-		uint8_t tmpbuf[128];
-		size_t tmpsize = sizeof(tmpbuf);
+		uint8_t ep_out = 0x01; /* out of host into device */
 		size_t sendsize = iosize;
 		if (sendsize > 4096)
 			sendsize = 4096;
-
-		fwrite(iopos, 1, sendsize, stdout);
 		iopos += sendsize;
 		iosize -= sendsize;
-		fflush(stdout);
-
-		last_send_status = cupsSideChannelDoRequest(CUPS_SC_CMD_DRAIN_OUTPUT,
-				(char *) tmpbuf, (int *) &tmpsize, 1.0);
-
-		if (last_send_status != CUPS_SC_STATUS_OK) {
-			if (last_send_status == CUPS_SC_STATUS_TIMEOUT) {
-				/* Overcome race conditions in usb backend */
-				fprintf(stderr, "DEBUG: CAPT: output already empty, not drained\n");
-			} else {
-				fprintf(stderr, "ERROR: CAPT: no reply from backend, err=%i\n",
-					(int) last_send_status);
-				exit(1);
-			}
+		code_r = libusb_bulk_transfer(device_handle, ep_out, (unsigned char*) iopos, iosize, &n_sent, 1000);
+		if(code_r < 0)
+		{
+			fprintf(stderr, "DEBUG: CAPT: cannot send buffer (%s)\n", libusb_strerror(code_r));
+			usb_cleanup();
+			exit(1);
 		}
 	}
 }
 
 static void capt_recv_buf(size_t offset, size_t expected)
 {
-	ssize_t size;
+	uint8_t ep_in = 0x82; /* out of device into host */
+	int timeout = 1000;
+	int size;
+	int code_r;
 	if (offset + expected > sizeof(capt_iobuf)) {
 		fprintf(stderr, "ALERT: bug in CAPT driver, input buffer overflow\n");
+		usb_cleanup();
 		exit(1);
 	}
-	fprintf(stderr, "DEBUG: CAPT: waiting for %u bytes\n", (unsigned) expected);
-	size = cupsBackChannelRead((char *) capt_iobuf + offset, expected, 15.0);
-	if (size < 0) {
-		fprintf(stderr, "ERROR: CAPT: no reply from printer\n");
-		exit(1);
+	while(1) {
+		fprintf(stderr, "DEBUG: CAPT: waiting for %u bytes\n", (unsigned) expected);
+		code_r = libusb_bulk_transfer(device_handle, ep_in, (unsigned char *) capt_iobuf + offset, expected, &size, timeout);
+
+		if (code_r == LIBUSB_ERROR_TIMEOUT) {
+			fprintf(stderr, "DEBUG: CAPT: capt_recv_buf() timeout after %d msec, retrying\n", timeout);
+			sleep(1);
+			timeout *= 2;
+			continue;
+		}
+		else if (code_r < 0) {
+			fprintf(stderr, "ERROR: CAPT: no reply from printer (%s)\n", libusb_strerror(code_r));
+			usb_cleanup();
+			exit(1);
+		}
 	}
-	capt_iosize = offset + size;
+	capt_iosize = offset + (size_t)size;
 }
 
 const char *capt_identify(void)
 {
-	while (1) {
-		cups_sc_status_t status;
-		capt_iosize = sizeof(capt_iobuf) - 1;
-		status = cupsSideChannelDoRequest(CUPS_SC_CMD_GET_DEVICE_ID,
-				(char *) capt_iobuf, (int *) &capt_iosize, 60.0);
-		if (status != CUPS_SC_STATUS_OK) {
-			fprintf(stderr, "ERROR: CAPT: unable to communicate with printer\n");
-			exit(1);
-		}
-		capt_iobuf[capt_iosize] = '\0';
-		fprintf(stderr, "DEBUG: CAPT: printer ID string %s\n", capt_iobuf);
-		if (capt_iosize)
-			return (const char*) capt_iobuf;
-		sleep(1);
+	if(device_handle == NULL) fprintf(stderr, "DEBUG: CAPT: device handle is null\n");
+	int REQUEST_TYPE = 0xA1;
+	int code;
+	int iosize = sizeof(lusb_iobuf)-1;
+	fprintf(stderr, "DEBUG: CAPT: attempt to get IEEE 1284 Device ID\n");
+	code = libusb_control_transfer(device_handle, REQUEST_TYPE, 0x0, 0x0, 0x0, lusb_iobuf, iosize-1, 300);
+	if(code < 0){
+		fprintf(stderr, "DEBUG: CAPT: unable to get device ID string (%s)\n", libusb_strerror(code));
+		usb_cleanup();
+		exit(1);
 	}
+	lusb_iobuf[iosize] = '\0';
+	fprintf(stderr, "DEBUG: CAPT: printer ID string: %s\n", lusb_iobuf+1);
+	return (const char*)lusb_iobuf+1; // the ID string begins with a \0
 }
 
 static void capt_copy_cmd(uint16_t cmd, const void *buf, size_t size)

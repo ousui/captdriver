@@ -1,15 +1,45 @@
-This is a driver for Canon CAPT-based printers (LBP-***)
-based on several reverse engineering attempts. This is
-currently in an early alpha stage. Use at your own risk.
+This is a dead branch of Captdriver, a libre printer driver
+to allow printing from the Common Unix Printing System (CUPS)
+to certain Canon printers that only support the Canon Advanced
+Printing Technology (CAPT) control protocol and associated data
+formats.
 
-Please take a look at INSTALL.git and INSTALL files for
-installation instructions.
+This branch will not be updated. However, it has been retained
+in the source tree to serve as a historical reference, just in
+case it might be useful for troubleshooting regressions.
 
-The printer protocol documentation based on reverse engineering
-is in the SPECS file. This is incomplete and probbaly has many
-errors. Please help expanding it.
+To get the latest release, return to the master branch.
+Alternatively, check the releases or the issues section.
 
-The file "rastertocapt" has to be installed into CUPS manually.
-If you don't know how to do that, this driver is not for you. :)
-Automatic installation will not be done until the driver reaches
-beta stage to avoid misuse.
+This branch attempts to use a secondary libusb 1.0 handle to
+communicate directly with the printer, bypassing CUPS' own USB
+backend. However, the secondary handle refuses to work and keeps
+bailing out with LIBUSB_ERROR_TIMEOUT.
+
+The exact cause of the failure and the means of getting it to work
+is left as an exercise for the reader.
+
+The CUPS USB backend has proven somewhat unreliable in supporting
+the full-time bi-directional CAPT protocol, and the secondary handle
+was intended to support a more reliable bi-directional link to the
+printer.
+
+For more background information, check out the following Issues:
+
+agalakhov/#7 https://github.com/agalakhov/captdriver/issues/7
+mounaiban/#8 https://github.com/mounaiban/captdriver/issues/8
+
+Additional setup is required for compilation and use:
+
+1. pkg-config and the libusb 1.0 development package must be
+   installed to successfully compile this branch.
+
+   * The libusb development package is named libusb-1.0-0-dev
+     on APT and libusb1-devel on DNF
+
+2. A udev rule must be added to /etc/udev/rules.d/ to enable
+   rootless access to the printer device.
+
+   * Refer to the Mounaiban Captdriver Wiki for instructions on
+     how to do this: https://github.com/mounaiban/captdriver/wiki/
+
