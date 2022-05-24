@@ -2,22 +2,18 @@
 
 📣 **IMPORTANT NOTE to Fellow Hackers who Have Forked This Repo** 📣
 
-A rebase has been scheduled for this repository. Changes that you have
-made may not easily merge after the rebase. However, I will try my best
-to preserve the current state of the repository (maybe in an alternate
-branch?).
+A rebase has been scheduled for this repository, in order to stay in
+sync with the [Alexey's orignal repo](https://github.com/agalakhov/captdriver/commits/master)
+The rebase will take place on or after **24th June, 2022** UTC.
 
-A definitve timeline for the rebase will be given at a later date.
+The following changes will take place:
 
-This is to incorporate changes from unexpected pull requests that got
-[merged into Alexey's original repo](https://github.com/agalakhov/captdriver/commits/master),
-specifically #39 to #45. These PRs add most features that were previously
-only available on this fork, along with updates to SPECS and the build
-files. However, this fork has diverged enough to make a trivial merge 
-impossible.
+- [x] The history of the `master` branch as of today will be preserved in `0.1.4-original-history`
+- [ ] `0.1.4.1-RE` will become the starting point for future pull request branches
+  - Please make pull requests to this branch while we are at version 0.1.4.   
+- [ ] `0.1.4.1-master` will be absorbed back into `master`. Some commits may be squashed.
 
-The upcoming rebase aims to restore similarity with the original codebase
-and the ability to transfer enhancements and bugfixes between the two repos.
+Please aware of the extra `.1` on the names of the new branches. Thanks a million!
 
 ## Foreword
 **Captdriver is a free (as in speech) alternative driver** for Canon 
