@@ -89,13 +89,20 @@ static void swap(unsigned *a, unsigned *b)
 
 static unsigned find_msb(unsigned val)
 {
-	/* FIXME do this faster */
+  /* Binary search adapted from bisect_right() in Python 3*/
+  unsigned min = 0;
+  unsigned max = sizeof(val) << 3;
 	unsigned nbits;
-	if (val == 0)
+  if (val == 0)
 		return 0;
-	for (nbits = 8 * sizeof(val) - 1; val < (1u << nbits); --nbits)
-		;
-	return nbits + 1;
+  while(min < max){
+    nbits = (min + max) >> 1u;
+    if (val < (1u << nbits))
+      max = nbits;
+    else
+      min = nbits + 1;
+  }
+	return min;
 }
 
 static bool try_write_longrepeat(struct state *state)
