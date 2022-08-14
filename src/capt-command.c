@@ -28,7 +28,7 @@
 #include <cups/cups.h>
 #include <cups/sidechannel.h>
 
-static uint8_t capt_iobuf[0x10000];
+static uint8_t capt_iobuf[0xFFF0];
 static size_t  capt_iosize;
 static cups_sc_status_t last_send_status = CUPS_SC_STATUS_NONE;
 static bool sendrecv_started = false;
