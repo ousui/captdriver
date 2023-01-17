@@ -14,8 +14,10 @@ if test -z "${CUPS_CONFIG}"; then
     AC_MSG_FAILURE([CUPS library not found.])
 fi
 CUPS_CFLAGS="`${CUPS_CONFIG} --cflags`"
+CUPS_LDFLAGS="`${CUPS_CONFIG} --image --ldflags`"
 CUPS_LIBS="`${CUPS_CONFIG} --image --libs`"
 AC_SUBST(CUPS_CFLAGS)
+AC_SUBST(CUPS_LDFLAGS)
 AC_SUBST(CUPS_LIBS)
 
 AC_CONFIG_FILES([Makefile
