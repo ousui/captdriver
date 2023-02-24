@@ -1,0 +1,15 @@
+Package: printer-driver-cups-capt
+Version: 0.1.4.1
+Section: text 
+Source: captdriver
+Origin: Armbian
+Maintainer: Shuai W. <x@ousui.org>
+Bugs: https://github.com/mounaiban/captdriver/issues
+Homepage: https://github.com/ousui/captdriver
+Depends: cups, cups-client, cups-filters | ghostscript-cups (<< 9.08), libc6 (>= 2.34), libcups2 (>= 2.3~b6), libusb-1.0-0 (>= 2:1.0.8), libcupsimage2 
+Architecture: arm64
+Installed-Size: 196 kB
+Description: printer driver for capt
+  This is a printer driver for cups and capt (Canon Advanced Print Technology)
+  Now this driver support LBP2900, LBP2900+, LBP3000, LBP3010, LBP3018, LBP3050.
+  
